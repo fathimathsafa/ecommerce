@@ -3,6 +3,7 @@ import 'package:demo/fake_store/presentation/bottom_controller.dart';
 import 'package:demo/fake_store/presentation/cart_contrller.dart';
 import 'package:demo/fake_store/presentation/category_controller.dart';
 import 'package:demo/fake_store/presentation/home_screen/controller/home_screen_controller.dart';
+import 'package:demo/fake_store/presentation/home_screen/home_screen.dart';
 import 'package:demo/fake_store/presentation/login_controller.dart';
 import 'package:demo/fake_store/presentation/splash.dart';
 import 'package:flutter/material.dart';
@@ -19,12 +20,12 @@ void main() {
     ChangeNotifierProvider(
       create: (context) => CartController(),
     ),
-    ChangeNotifierProvider(
-      create: (context) => CategoryController(),
-    ),
-    ChangeNotifierProvider(
-      create: (context) => BottomNavController(),
-    ),
+    // ChangeNotifierProvider(
+    //   create: (context) => CategoryController(),
+    // ),
+    // ChangeNotifierProvider(
+    //   create: (context) => BottomNavController(),
+    // ),
   ], child: MyApp()));
 }
 
@@ -35,7 +36,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      home: BottomNavigationScreen(),
+      home: HomeScreen(),
     );
   }
 }

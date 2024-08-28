@@ -1,163 +1,176 @@
-//
-// import 'package:flutter/material.dart';
-// import 'package:provider/provider.dart';
-// import 'package:shopping_cart/core/constatnts/global_textstyles.dart';
-// import 'package:shopping_cart/presentation/cart_screen/widgets/cart_item_card/cart_item_card_screen.dart';
-//
-// import '../controller/cart_controller.dart';
-//
-// class CartScreen extends StatefulWidget {
-//   const CartScreen({super.key});
-//
-//   @override
-//   State<CartScreen> createState() => _CartScreenState();
-// }
-//
-// class _CartScreenState extends State<CartScreen> {
-//   fetchData() {
-//     Provider.of<CartController>(context, listen: false).fetchData(context);
-//   }
-//
-//   @override
-//   void initState() {
-//     fetchData();
-//     super.initState();
-//   }
-//
-//   @override
-//   Widget build(BuildContext context) {
-//     var size = MediaQuery.of(context).size;
-//     return Scaffold(
-//       appBar: AppBar(
-//         title: Text(
-//           "Your Cart",
-//           style: GLTextStyles.title,
-//         ),
-//         centerTitle: true,
-//       ),
-//       body: Consumer<CartController>(builder: (context, scontrol, child) {
-//         return scontrol.isLoading == true
-//             ? Center(
-//                 child: CircularProgressIndicator(),
-//               )
-//             :ListView.builder(
-//                 itemCount: scontrol.cartModel.data?.length,
-//                 itemBuilder: (context, index) {
-//                   print(scontrol.cartModel.data?.length);
-//                   var addindex = scontrol.cartModel.data?[index].products?.length;
-//                   print("add ${index} : $addindex");
-//                   return SizedBox(
-//                        height: size.height * .2,
-//                       child: Column(children: [
-//                     ListView.builder(
-//                       itemBuilder: (context, index) {
-//                         return  CartItemCard(
-//                               date: scontrol.cartModel.data?[index].date.toString(),
-//                                productId: scontrol.cartModel.data?[index].products?[0].productId.toString(),
-//                                quantity: scontrol.cartModel.data?[index].products?[0].quantity?.toInt(),
-//                               size: size,
-//                             );
-//                       },
-//                     )
-//                   ])
-//                       //     CartItemCard(
-//                       //   date: scontrol.cartModel.data?[index].date.toString(),
-//                       //    productId: scontrol.cartModel.data?[index].products?[0].productId,
-//                       //    quantity: scontrol.cartModel.data?[index].products?[0].quantity?.toInt(),
-//                       //   size: size,
-//                       // )
-//                       );
-//                 });
-//
-//       }),
-//     );
-//   }
-// }
+import 'package:demo/fake_store/presentation/cart_contrller.dart';
+import 'package:demo/fake_store/presentation/cart_widget.dart';
 import 'package:flutter/material.dart';
-class CartScreen extends StatefulWidget {
-  final List<String> itemNames;
-  final List<String> itemPrices;
-  final List<String> itemImages;
-  // final Function(int) removeFromCart;
+import 'package:provider/provider.dart';
 
-  CartScreen({
-    required this.itemNames,
-    required this.itemPrices,
-    required this.itemImages,
-    // required this.removeFromCart,
-  });
+class CartScreen extends StatelessWidget {
+  const CartScreen({super.key});
 
-  @override
-  _CartScreenState createState() => _CartScreenState();
-}
-
-class _CartScreenState extends State<CartScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Your Cart',style:TextStyle(fontWeight: FontWeight.bold)),
-        centerTitle: true,
-      ),
-      body: ListView.builder(
-        itemCount: widget.itemNames.length,
-        itemBuilder: (context, index) {
-          return ListTile(
-            leading: Image.network(widget.itemImages[index]),
-            title: Text(widget.itemNames[index]),
-            subtitle: Text('\$${widget.itemPrices[index]}'),
-            trailing: IconButton(
-              icon: Icon(Icons.delete),
+        title: const Text('My Cart'),
+        actions: [
+          IconButton(
               onPressed: () {
-                // setState(() {
-                //   widget.removeFromCart(index);
-                // });
+                context.read<CartController>().clearItems();
               },
+              icon: const Icon(Icons.delete))
+        ],
+      ),
+      body: Column(
+        children: [
+          Expanded(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.all(15),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Consumer<CartController>(
+                    builder: (context, cart, child) {
+                      if (cart.totalCartCount == 0) {
+                        return const Center(
+                          child: Text('Your cart is empty!'),
+                        );
+                      }
+                      return Column(
+                        children: [
+                          ListView.separated(
+                            shrinkWrap: true,
+                            physics: const NeverScrollableScrollPhysics(),
+                            itemBuilder: (context, index) => CartItemCard(
+                              item: cart.cartItemList[index].product,
+                            ),
+                            separatorBuilder: (context, index) =>
+                                const SizedBox(height: 10),
+                            itemCount: cart.cartItemList.length,
+                          ),
+                          const SizedBox(height: 25),
+                          Container(
+                            padding: const EdgeInsets.all(10),
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius:
+                                  BorderRadiusDirectional.circular(15),
+                            ),
+                            child: Column(
+                              children: [
+                                Row(
+                                  children: [
+                                    Text(
+                                      'Subtotal (${cart.totalCartCount} items)',
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .bodyLarge
+                                          ?.copyWith(
+                                              color: Colors.black
+                                                  .withOpacity(0.7)),
+                                    ),
+                                    const Spacer(),
+                                    Text(
+                                      '\$${cart.totalCartPrice.toStringAsFixed(2)}',
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .bodyLarge
+                                          ?.copyWith(
+                                            color: Colors.black,
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: 15),
+                                Row(
+                                  children: [
+                                    Text(
+                                      'Shipping',
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .bodyLarge
+                                          ?.copyWith(
+                                              color: Colors.black
+                                                  .withOpacity(0.7)),
+                                    ),
+                                    const Spacer(),
+                                    Text(
+                                      '\$20.00',
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .bodyLarge
+                                          ?.copyWith(
+                                            color: Colors.black,
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: 20),
+                                Divider(
+                                  color: Colors.black.withOpacity(0.06),
+                                  thickness: 2,
+                                ),
+                                const SizedBox(height: 10),
+                                Row(
+                                  children: [
+                                    Text(
+                                      'Total',
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .titleLarge
+                                          ?.copyWith(
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                    ),
+                                    const Spacer(),
+                                    Text(
+                                      '\$${(cart.totalCartPrice + 20).toStringAsFixed(2)}',
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .titleLarge
+                                          ?.copyWith(
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: 15),
+                              ],
+                            ),
+                          ),
+                        ],
+                      );
+                    },
+                  ),
+                ],
+              ),
             ),
-          );
-        },
-      ),
-      bottomNavigationBar: BottomAppBar(
-        elevation: 0,
-        child: Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                'Total:',
-                style: TextStyle(fontSize: 18,fontWeight: FontWeight.w500),
-              ),
-              Text(
-                '\$${calculateTotal(widget.itemPrices)}',
-                style: TextStyle(fontSize: 20,fontWeight: FontWeight.bold),
-              ),
-            ],
           ),
-        ),
+          Padding(
+            padding: const EdgeInsets.all(15).copyWith(top: 0),
+            child: InkWell(
+              onTap: () {},
+              borderRadius: BorderRadius.circular(10),
+              child: Ink(
+                height: 40,
+                decoration: BoxDecoration(
+                  color: Theme.of(context).primaryColor,
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Center(
+                  child: Text(
+                    'Proceed to Checkout',
+                    style: Theme.of(context)
+                        .textTheme
+                        .titleMedium
+                        ?.copyWith(color: Colors.white),
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ],
       ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: () {
-          setState(() {
-            widget.itemNames.clear();
-            widget.itemPrices.clear();
-            widget.itemImages.clear();
-          });
-        },
-        label: Text('Delete All'),
-        icon: Icon(Icons.delete_forever),
-        backgroundColor: Colors.red,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-      ),
-      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
     );
-  }
-
-  String calculateTotal(List<String> prices) {
-    double total = 0;
-    for (var price in prices) {
-      total += double.parse(price);
-    }
-    return total.toStringAsFixed(2);
   }
 }

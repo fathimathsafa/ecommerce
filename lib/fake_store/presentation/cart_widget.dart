@@ -1,77 +1,124 @@
-import 'dart:core';
-
-import 'package:demo/fake_store/core/text.dart';
+// import 'package:flutter/material.dart';
+import 'package:demo/fake_store/core/loading.dart';
+import 'package:demo/fake_store/presentation/cart_contrller.dart';
+import 'package:demo/fake_store/presentation/home_screen/model/home_screen_model.dart';
+import 'package:demo/fake_store/presentation/home_screen/widget/add.dart';
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
+import 'package:provider/provider.dart';
 
 
 
 class CartItemCard extends StatelessWidget {
-  CartItemCard({
+  const CartItemCard({
     super.key,
-    this.id,
-    this.userId,
-    required this.date,
-    this.v,
-    required this.size,
-    this.productId,
-    this.quantity,
+    required this.item,
   });
 
-  final int? id;
-  final int? userId;
-  final String? date;
-  final String? productId;
-  final int? quantity;
-  final int? v;
-  final Size? size;
+  final ProductModel item;
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.only(left: 10),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+    return Container(
+      padding: const EdgeInsets.all(10),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadiusDirectional.circular(15),
+      ),
+      child: Row(
         children: [
-          Text(
-            date != null
-                ? DateFormat("yyyy-mm-dd")
-                    .format(DateTime.parse(date.toString()))
-                : "",
-            style: GLTextStyles.labeltxtBlk16,
-            overflow: TextOverflow.ellipsis,
+          Flexible(
+            flex: 1,
+            child: AspectRatio(
+              aspectRatio: 1,
+              child: Image.network(
+                item.image,
+                loadingBuilder: (context, child, loadingProgress) {
+                  if (loadingProgress == null) {
+                    return child;
+                  }
+                  return const Center(
+                    child: CustomLoadingIndicator(),
+                  );
+                },
+              ),
+            ),
           ),
-          SizedBox(
-            height: 5,
-          ),
-          Container(
-            decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(10),
-                color: Colors.white24,
-                border: Border.all(width: 0.5)),
-            margin: const EdgeInsets.only(left: 10, right: 10, bottom: 10),
-            padding: EdgeInsets.only(left: 10),
+          const SizedBox(width: 10),
+          Expanded(
+            flex: 3,
             child: Column(
-              crossAxisAlignment: CrossAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  "$productId",
-                  style: GLTextStyles.titleblack18,
-                  overflow: TextOverflow.ellipsis,
-                  maxLines: 6,
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  children: [
+                    Expanded(
+                      child: Text(
+                        item.title,
+                        style: Theme.of(context).textTheme.titleMedium,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                    IconButton(
+                      onPressed: () {
+                        context.read<CartController>().deleteItemFromCart(item);
+                        ScaffoldMessenger.of(context)
+                            .showSnackBar(const SnackBar(
+                          content: Text('Item removed from cart'),
+                        ));
+                      },
+                      icon: const Icon(Icons.delete),
+                    ),
+                  ],
                 ),
-                Text(
-                  "$quantity",
-                  style: GLTextStyles.titleblack18,
-                  overflow: TextOverflow.ellipsis,
-                  maxLines: 6,
+                Row(
+                  children: [
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            const Icon(
+                              Icons.star,
+                              color: Colors.amber,
+                              size: 15,
+                            ),
+                            Text(item.rating.rate.toString()),
+                          ],
+                        ),
+                        Text(
+                          '\$${item.price}',
+                          style:
+                              Theme.of(context).textTheme.bodyMedium?.copyWith(
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.green,
+                                  ),
+                        ),
+                      ],
+                    ),
+                    const Spacer(),
+                    Consumer<CartController>(
+                      builder: (context, value, child) {
+                        return AddToCartButton(
+                          count: value.getItemCount(item.id),
+                          onTap: () {
+                            value.addItemToCart(item);
+                          },
+                          onAddTap: () {
+                            value.addItemToCart(item);
+                          },
+                          onRemoveTap: () {
+                            value.removeItemFromCart(item);
+                          },
+                        );
+                      },
+                    ),
+                  ],
                 ),
               ],
             ),
           ),
-          SizedBox(
-            height: 15,
-          )
         ],
       ),
     );

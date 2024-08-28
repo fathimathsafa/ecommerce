@@ -23,7 +23,7 @@ Future onLogin(String username, String password, BuildContext context) async {
       storeUserToken(value["token"]);
       Navigator.pushAndRemoveUntil(
         context,
-        MaterialPageRoute(builder: (context) => BottomNavigationScreen()),
+        MaterialPageRoute(builder: (context) => HomeScreen()),
         (route) => false,
       );
     } else {
